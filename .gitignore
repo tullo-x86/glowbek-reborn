@@ -1,0 +1,6 @@
+# CLion state
+.idea/
+
+# Fake CMakeLists.txt
+CMakeLists.txt
+
