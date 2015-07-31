@@ -98,7 +98,7 @@ unsigned char SparksPattern::pickHue()
     if (_hueSelector != NULL)
         return _hueSelector();
 
-    return rand() % HUE_MAX_RAINBOW;
+    return random8();
 }
 
 void SparksPattern::pushSparkToFront(unsigned char hue)

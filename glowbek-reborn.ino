@@ -2,6 +2,7 @@
 #include "fix_fft.h"
 
 #include <FastLED.h>
+#include "SparksPattern.h"
 
 #define LED_COUNT 4
 #define SAMPLE_COUNT 128
@@ -14,10 +15,20 @@ unsigned short magnitudeSquared[USED_BIN_COUNT];
 
 #define AUDIOPIN A0
 
-struct CRGB leds[LED_COUNT];
+CRGB leds[LED_COUNT];
 int ledsX[LED_COUNT][3];
 
 char gradient[10] = {' ', '·','~','¢','c','»','¤','X','M','¶'};
+
+SparksPattern sparks(leds, LED_COUNT,
+                     50, //framesPerSecond,
+                     3, //sparkleTrailLength,
+                     6, //valFalloffDistance,
+                     32, //valMin,
+                     150, //valMax,
+                     10); //sparkDistance
+
+uint32_t lastMillis;
 
 //------------------SETUP------------------
 void setup() {
@@ -28,6 +39,8 @@ void setup() {
     fill_solid(leds, LED_COUNT, CRGB(16,16,0));
     LEDS.show();
     Serial.println(" Done.");
+
+    lastMillis = millis();
 }
 
 void printValues() {
@@ -40,15 +53,22 @@ void printValues() {
     }
 }
 
+void listen();
+
+
 //------------------MAIN LOOP------------------
 void loop() {
     listen();
 
     printValues();
 
-    for (uint8_t i = 0; i < LED_COUNT; i++) {
+    /*for (uint8_t i = 0; i < LED_COUNT; i++) {
         leds[i] = CHSV(i * 85, 255, magnitudeSquared[i] >> 8);
-    }
+    }*/
+    uint32_t currMillis = millis();
+    sparks.update(currMillis - lastMillis);
+    lastMillis = currMillis;
+    sparks.draw(leds);
 
     LEDS.show();
 }
