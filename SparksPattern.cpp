@@ -60,14 +60,9 @@ SparksPattern::SparksPattern(CRGB *rgbBuffer,
     _sparks[0] = Spark(0, length - 1);
 }
 
-void SparksPattern::update(unsigned int deltaT)
+void SparksPattern::update()
 {
-    _timeUntilNextFrame -= deltaT;
-    if (_timeUntilNextFrame <= 0) {
-
-        _timeUntilNextFrame += _timeBetweenFrames;
-        advanceSparks();
-    }
+    advanceSparks();
 }
 
 void SparksPattern::advanceSparks()
@@ -86,19 +81,6 @@ void SparksPattern::advanceSparks()
             _sparkCount--;
         }
     }
-
-    if (--_framesUntilNewSpark == 0) {
-        _framesUntilNewSpark = _sparkDistance;
-        pushSparkToFront(pickHue());
-    }
-}
-
-unsigned char SparksPattern::pickHue()
-{
-    if (_hueSelector != NULL)
-        return _hueSelector();
-
-    return random8();
 }
 
 void SparksPattern::pushSparkToFront(unsigned char hue)

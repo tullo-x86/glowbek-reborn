@@ -28,19 +28,19 @@ SparksPattern sparks(leds, LED_COUNT,
                      150, //valMax,
                      10); //sparkDistance
 
-uint32_t lastMillis;
+#define FRAME_WINDOW 4
+bool pastTriggers[FRAME_WINDOW];
 
-//------------------SETUP------------------
 void setup() {
-    Serial.begin(115200);
-    Serial.print("Initialising...");
+    //Serial.begin(115200);
+    //Serial.print("Initialising...");
 
     LEDS.addLeds<WS2811, 7, GRB>(leds, 0, LED_COUNT);
     fill_solid(leds, LED_COUNT, CRGB(16,16,0));
     LEDS.show();
-    Serial.println(" Done.");
+    //Serial.println(" Done.");
 
-    lastMillis = millis();
+    memset8(pastTriggers, 0, FRAME_WINDOW);
 }
 
 void printValues() {
@@ -55,22 +55,41 @@ void printValues() {
 
 void listen();
 
-
-//------------------MAIN LOOP------------------
 void loop() {
     listen();
 
-    printValues();
+    //printValues();
 
-    /*for (uint8_t i = 0; i < LED_COUNT; i++) {
-        leds[i] = CHSV(i * 85, 255, magnitudeSquared[i] >> 8);
-    }*/
-    uint32_t currMillis = millis();
-    sparks.update(currMillis - lastMillis);
-    lastMillis = currMillis;
+    FastLED.show();
+
+    bool isTriggered = false;
+
+    for (int i = 0; i < USED_BIN_COUNT; ++i) {
+        if (magnitudeSquared[i] > 0x0150)
+        {
+            isTriggered = true;
+            break;
+        }
+    }
+
+    bool canFireSpark = true;
+    for (int j = 0; j < FRAME_WINDOW; ++j) {
+        if (pastTriggers[j]) {
+            canFireSpark = false;
+            break;
+        }
+    }
+
+    if (canFireSpark && isTriggered) {
+        sparks.pushSparkToFront(random8());
+    }
+
+    memcpy8(pastTriggers, pastTriggers+1, FRAME_WINDOW-1);
+    pastTriggers[FRAME_WINDOW-1] = isTriggered;
+
+
+    sparks.update();
     sparks.draw(leds);
-
-    LEDS.show();
 }
 
 void listen() {
@@ -79,7 +98,7 @@ void listen() {
     // Read some samples
     for (uint8_t i = 0; i < SAMPLE_COUNT; i++) {
         data[i] = analogRead(AUDIOPIN);
-        _delay_us(125);
+        _delay_us(50);
     };
 
     // The FFT provides vectors in the form of { data[i], im[i] } vectors.

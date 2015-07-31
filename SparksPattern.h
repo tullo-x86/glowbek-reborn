@@ -57,11 +57,10 @@ public:
                   HueSelector hueSelector = NULL);
     virtual ~SparksPattern();
 
-    virtual void update(unsigned int deltaT);
+    virtual void update();
     virtual void draw(CRGB *frameBuffer);
 
-protected:
-    virtual unsigned char pickHue();
+    void pushSparkToFront(unsigned char hue);
 
 private:
     unsigned char _length;
@@ -85,7 +84,6 @@ private:
 
     unsigned char pixelVal(unsigned char leadingSparkPosition,
                            unsigned char pixelPosition);
-    void pushSparkToFront(unsigned char hue);
     void advanceSparks();
 };
 
